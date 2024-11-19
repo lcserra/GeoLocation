@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch Latitude and Longitude</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #location {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Get Your Location</h1>
+    <form id="location-form">
+        <button type="submit">Get My Location</button>
+    </form>
+    <div id="location">
+        <p>Your location is:</p>
+        <p>Latitude: <span id="latitude">Not available</span></p>
+        <p>Longitude: <span id="longitude">Not available</span></p>
+    </div>
+
+    <script>
+        document.getElementById("location-form").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent form submission
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const long = position.coords.longitude;
+
+                    document.getElementById("latitude").innerText = lat.toFixed(6);
+                    document.getElementById("longitude").innerText = long.toFixed(6);
+
+                    // Send data to Google Apps Script
+                    fetch('https://script.google.com/macros/s/AKfycbxyF-2CHJmxIQkwP7R624_7hAfuDftDKqy7H5RCpASbrYTkkdoN6ZQxFDLrREkV0sNy/exec', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ lat: lat, long: long })
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log(data);
+                        alert("Location recorded successfully!");
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                        alert("Failed to record location.");
+                    });
+                }, (error) => {
+                    console.error("Error getting location:", error);
+                    alert("Unable to retrieve your location. Please check your settings.");
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        });
+    </script>
+</body>
+</html>
